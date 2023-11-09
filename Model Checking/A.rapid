@@ -1,0 +1,91 @@
+// The core code of Program A
+
+MODULE MainModule
+
+    // Define the target positions of robot.
+    VAR robtarget a := [...];
+    VAR robtarget b := [...];
+    VAR robtarget c1 := [...];
+    VAR robtarget c2 := [...];
+
+    // Define the speed of the robot.
+    VAR speeddata v := [...];
+
+    // Define the zonedata of the robot.
+    VAR zonedata z:= [...];
+
+    // Define the end effector of the robot.
+    VAR tooldata grip := [...];
+
+    // Declare the I/O signals.
+    VAR signaldi s1;
+    VAR signaldi s2;
+    VAR signaldi s3;
+    VAR signaldi s4;
+    VAR signaldi c_in;
+    VAR signaldo c_out;
+
+    // Define the I/O units.
+    CONST string config_cin := ''C_IN'';
+    CONST string config_cout := ''C_OUT''
+    CONST string config_s1 := ''S_1'';
+    CONST string config_s2 := ''S_2'';
+    CONST string config_s1 := ''S_3'';
+    CONST string config_s2 := ''S_4'';
+
+    PROC main()
+        Bool flag_1 := false;
+        Bool flag_2 := false;
+        Bool flag_3 := false;
+        Bool flag_4 := false;
+
+        // Link the I/O units with the I/O variables.
+        AliasIO config_cin, c_in;
+        AliasIO config_cout, c_out;
+        AliasIO config_s1, s1;
+        AliasIO config_s2, s2;
+        AliasIO config_s3, s3;
+        AliasIO config_s4, s4;
+
+        WHILE true DO
+            // Transport the non-defective pinions and restart the conveyor.
+            flag_1 := (c_in = 0) AND (s1=1) AND (s2=1);
+            IF flag_1 THEN
+                MoveJ b, v, zone, grip;
+                Grip();
+                MoveJ c1, v, zone, grip;
+                Drop();
+                MoveJ a, v, zone, grip;
+                flag_3 = (s3 = 1) AND (s4 = 0);
+                IF flag_3 THEN
+                    SetDO c_out, 1;
+                ENDIF
+            ENDIF
+
+            // Transport the defective pinions and restart the conveyor.
+            flag_2 := (c_in = 0) AND (NOT (s1=1) AND (s2=1));
+            IF flag_2 THEN
+                MoveJ b, v, zone, grip;
+                Grip();
+                MoveJ c2, v, zone, grip;
+                Drop();
+                MoveJ a, v, zone, grip;
+                flag_4 = (s3 = 0) AND (s4 = 1);
+                IF flag_4 THEN
+                    SetDO c_out, 1;
+                ENDIF
+            ENDIF
+        ENDWHILE
+    ENDPROC
+
+    // Grip the pinions.
+    PROC grip()
+        ...
+    ENDPROC
+
+    // Drop the pinions.
+    PROC drop()
+        ...
+    ENDPROC
+
+ENDMODULE
